@@ -4,8 +4,8 @@ AddCSLuaFile( "shared.lua" )
 include( "shared.lua" )
 
 include("rounds.lua") -- Enable/disable rounds.
-include("cl_shop.lua") -- Shop!
-AddCSLuaFile("cl_score.lua") -- Scoreboard
+--include("cl_shop.lua") -- Shop!
+--AddCSLuaFile("cl_score.lua") -- Scoreboard
 
 /*
   ________        __ ___________.__                    
@@ -29,8 +29,8 @@ if ( SERVER ) then
 		else
 		ply:SetXp( experience )
 		end
-
 	end
+	
 	hook.Add( "PlayerInitialSpawn", "xPlayerInitialSpawn", xFirstSpawn )
 
 	function PrintXp( pl )
@@ -393,7 +393,6 @@ end
 	end
 	
 function GM:Initialize()
-	--round.Begin()
     timer.Create( "Healthgain", 1, 0, function()
 	for k, ply in pairs( player.GetAll() ) do
 if ply:Health() < ply:GetMaxHealth() then
@@ -412,7 +411,6 @@ if ( key == IN_USE ) then
 
 if (ply:Health()>10) then
 if (ply:Team() == 1) then
-	//ply:SetNWInt("NPCteam1", ply:GetNWInt("NPCteam1") + 1 )
 	SetGlobalInt("NPCteam1", GetGlobalInt("NPCteam1") + 1 )
 	ply:SetHealth( ply:Health() - 10 )
 	ply:AddFrags( 1 )
@@ -422,17 +420,8 @@ if (ply:Team() == 1) then
 	npc:SetHealth(99)	
 	npc:Spawn()	
 	npc:SetName("TEAM1")
-	/*
-	for k, v in pairs( ents.GetAll() ) do
-	--npc:DrawShadow( false )
-	--npc:SetColor(255, 255, 255, 255) 
-	npc:SetName("TEAM1")
-	npc:SetVar("TEAM1NPC")
-end
-*/
 
 else
-	//ply:SetNWInt("NPCteam2", ply:GetNWInt("NPCteam2") + 1 )
 	SetGlobalInt("NPCteam2", GetGlobalInt("NPCteam2") + 1 )
 	ply:SetHealth( ply:Health() - 10 )
 	ply:AddFrags( 1 )
@@ -444,14 +433,6 @@ else
 	npc:SetName("TEAM2")
 	npc:DrawShadow( false )
 	npc:SetColor(255, 0, 0, 255) 
-	
-	/*
-	for k, v in pairs( ents.GetAll() ) do
-	npc:DrawShadow( false )
-	npc:SetColor(255, 0, 0, 255) 
-	npc:SetName("TEAM2")
-end
-*/
 
 	end
 		end
@@ -479,22 +460,25 @@ end
 	///////////////////////////////////////////////////
 	/////////////////ReMOVE dead NPC////////////////////
 	//////////////////////////////////////////////////	
-/*
-function RemoveDeadRag( ent )
 
+--function RemoveDeadRag( ent )
+/*
 	if (ent == NULL) or (ent == nil) then return end
 	if (ent:GetClass() == "class C_ClientRagdoll") then 
 		if ent:IsValid() and !(ent == NULL) then
-			SafeRemoveEntityDelayed(ent,0) 
+			SafeRemoveEntityDelayed(ent,0)
+			game.RemoveRagdolls()
 		end
 	end 
-	
-end
-hook.Add("OnEntityCreated", "RemoveDeadRag", RemoveDeadRag)
-*/
+	*/
+--end 
+--hook.Add("OnEntityCreated", "RemoveDeadRag", RemoveDeadRag)
+
+
+
 
 	///////////////////////////////////////////////////
-	/////////////////KILLED FUNCTION//////////////////
+	/////////////////KILLED FUNCTIONS/////////////////
 	//////////////////////////////////////////////////				
 
 function GM:OnNPCKilled( victim, killer, weapon )
@@ -515,7 +499,6 @@ function GM:OnNPCKilled( victim, killer, weapon )
 	killer:AddXp( math.random(-600, -1000) )
 	end
 	
-	
     if killer:Team() == 1 and victim:GetName() == "TEAM2" then
 	killer:AddXp( math.random(60, 100) )
 	killer:SetNWInt("killcounter", killer:GetNWInt("killcounter") + 1)
@@ -534,6 +517,15 @@ function GM:OnNPCKilled( victim, killer, weapon )
 end
 
 
+function GM:PlayerDeath( victim, inflictor, killer )
+	if killer:Team() == 1 and victim:Team() == 2 then
+	killer:AddXp( math.random(60, 500) )
+	else 
+	if killer:Team() == 2 and victim:Team() == 1 then
+	killer:AddXp( math.random(60, 500) )
+	end	
+	end
+end
 	///////////////////////////////////////////////////
 	/////////////////AUTO - DOOR FUNCTION/////////////
 	//////////////////////////////////////////////////
@@ -560,30 +552,7 @@ timer.Create( "DoorCheck", 1, 0, function()
     end
 end )
 
-	///////////////////////////////////////////////////
-	/////////////////NPC COUNTER//////////////////////
-	//////////////////////////////////////////////////
-/*	
-function NPCCounter()
-		
-   timer.Create( "NPCcheck", 5, 0, function()
- TEAMtwoNPC = #ents.FindByName( "TEAM2" )
- umsg.Start("TEAMTWO");
- umsg.String(TEAMtwoNPC);
- umsg.End();
 
- TEAMoneNPC = #ents.FindByName( "TEAM1" )
-umsg.Start("TEAMONE");
-umsg.String(TEAMoneNPC);
-umsg.End();
-end)
-
-
-
-
-hook.Add("OnNPCKilled","NPCCounter", NPCCounter)
-
-*/
 /*
 function GM:PlayerDeath( victim, inflictor, attacker )
 	if (attacker ~= victim) then
@@ -726,9 +695,9 @@ end
 
 
 
-	///////////////////////////////////////////////////
-	/////////////////PAIDAY FUNCTION//////////////////
-	//////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////
+	/////////////////PAIDAY FUNCTION/////////////////////////////
+	//TEAM 1 PAYDAY is diffrent than TEAM 2? now global..//////// 
 		timer.Create( "GivePoints", 600, 0, function() //300
 			local aliveNPCs1 = #ents.FindByName( "TEAM1" )
 			local aliveNPCs2 = #ents.FindByName( "TEAM2" )

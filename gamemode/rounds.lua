@@ -1,21 +1,58 @@
-function UpdateTimer (time)
-	net.Start("round_timer")
-		net.WriteInt( time, 10)
-	net.Broadcast()
-end
+	round = {}
+
+	-- Variables Round-System
+	round.Clean = true
+	round.Enable = true
+	round.Break	= 20	-- second breaks
+	round.Time	= 77	-- minute rounds
+	--round.Time = CreateConVar("round.Time", "0")
+	--round.Break = CreateConVar("round.Break", "0")
 	
+	-- Read Variables
+	round.TimeLeft = -1
+	round.Breaking = false
+	
+	///////////////////////////////////////////////////
+	/////////////////     ROUNDSYSTEM//////////////////
+	//////////////////////////////////////////////////
+util.AddNetworkString("Round_Timer")
+util.AddNetworkString("Round_active")	
+
+local delay = 0
+local roundTimer = round.Time
 
 
 
-round = {}
+hook.Add( "Think", "CurTimeDelay", function()
+ if CurTime() < delay then return end
+	--print( delay )
+	--print ( roundTimer)
+	roundTimer = roundTimer - 1
+	delay = CurTime() + 1
+	
+	
+	function Broadcast(Text)
+	--for k, v in pairs(player.GetAll()) do
+	--v:SetNWInt("roundTimer", roundTimer)
+	--end
+	--SetGlobalInt ("roundTimer" , roundTimer)
+	end
+	
+	
+	Roundtimer1 = roundTimer
+	umsg.Start("RoundTimer");
+	umsg.String(Roundtimer1);
+	umsg.End();
+	
+	--for k, v in pairs( player.GetAll() ) do
+	--v:SetNWInt( 'roundTimer', Roundtimer1 )
+	--end
+	--SetGlobalInt ("roundTimer" , roundTimer1)
+	
+	local timeFormat = string.FormattedTime( Roundtimer1, "%02i:%02i" )
+	SetGlobalInt ("roundTimer" , timeFormat)
 
--- Variables
-round.Break	= 30	-- 30 second breaks
-round.Time	= 300	-- 5 minute rounds
-
--- Read Variables
-round.TimeLeft = -1
-round.Breaking = true
+end)
 
 function round.Broadcast(Text)
 	for k, v in pairs(player.GetAll()) do
@@ -25,16 +62,6 @@ function round.Broadcast(Text)
 end
 
 function round.Begin()
-
-local time = 5
-UpdateTimer(time)
-timer.Create("round", 1, time , function()
-time = time -1
-net.Start ("round_active")
-net.WriteBool (True)
-net.Broadcast
-end
-	-- Your code
 	-- (Anything that may need to happen when the round begins)
 	
 	round.Broadcast("Round starting! Round ends in " .. round.Time .. " seconds!")
@@ -42,14 +69,48 @@ end
 end
 
 function round.End()
-	-- Your code
 	-- (Anything that may need to happen when the round ends)
 	
+
+	
+	--------Best Player Shizzl------------
+	local BestScore = 0 
+	local BestPlayer
+ 
+	for k,v in pairs( player.GetAll() ) do  
+	local Frags = v:Frags()       
+	if Frags > BestScore then     
+		BestPlayer = v:Name()
+		v:AddXp( v:Frags()*30 )
+		v:PrintMessage( HUD_PRINTTALK, "[WON!] + " .. v:Frags()*30 .. " $!");
+		BestScore = Frags  
+
+	
+	end
+	end
+ 
+	if BestScore != 0 then
+	round.Broadcast("" .. BestPlayer .. " has won " .. BestScore*30 .. " $ with ".. tostring(BestScore) .. " spawned humans!") 
+	end
+	---------------------------
+	
+	roundTimer = round.Time + round.Break
 	round.Broadcast("Round over! Next round in " .. round.Break .. " seconds!")
 	round.TimeLeft = round.Break
+	
+	if round.Clean == true then
+	
+	RunConsoleCommand("clean_map");
+	for k,v in pairs( player.GetAll() ) do  
+		v:SetFrags( 0 )
+	end	
+	end
+
+	
 end
 
 function round.Handle()
+if (round.Enable == true) then
 	if (round.TimeLeft == -1) then -- Start the first round
 		round.Begin()
 		return
@@ -66,99 +127,8 @@ function round.Handle()
 			round.Breaking = true
 		end
 	end
-end
+
+	end
+	end
+	
 timer.Create("round.Handle", 1, 0, round.Handle)
-
-/*
-MAX_ROUNDS = 3
-ROUND_TIME = 300 --In Seconds
-ROUND_TIMELEFT = -1
-ROUND_BREAK = 30 --Seconds
-local CurRound = 0;
-   
-function ROUND_REACHED()
-    -- Add some event when Current Round Reach the Max Rounds.
-    -- If you have map vote thing, add it.
-    -- If you need to change specific map, just add here.
-    ROUND_MESSEGE( "Max Round reached. Calling Round End Event." )
-end
-   
-function ROUND_MULTIPLAYER()
-    if (#player.GetAll() == 2) then
-        ROUND_MESSEGE( "Starting New Round in few seconds." )
-           
-        timer.Simple(8,ROUND_WAIT)
-    end;
-end
---hook.Add("PlayerInitialSpawn", "ROUND_MP", ROUND_MULTIPLAYER)
-   
-function ROUND_END()
-    ROUND_MESSEGE( "New round starting. Prepare." )
-     timer.Simple(5,ROUND_RESTART)
-end
-   
-function ROUND_RESTART()
-    game.CleanUpMap(); -- Reset all map entities. if you don't want it, just delete this line.
-    -- Add some event when new round start.
-       
-    --for k, v in ipairs(player.GetAll()) do
-   --if v:Team() == TEAM_Boxer then
-    -- v:SetPos(Vector(12.404461,-11.611498,95.531250))
-   -- end;
-       
-    if (MAX_ROUNDS == CurRound) then
-        ROUND_REACHED()
-    end;
-       
-    CurRound  = CurRound + 1;
-end
- --end
-   
-function ROUND_MESSEGE( say )
-    for k, v in ipairs(player.GetAll()) do
-       v:PrintMessage(HUD_PRINTTALK, tostring(say));
-    end;
-end
-  
-function ROUND_START()
-     --for k, v in pairs(player.GetAll()) do
-     --if v:Team() == TEAM_Boxer then
-     --v:SetPos(Vector(12.404461,-11.611498,95.531250))
-    -- end
-     ROUND_MESSEGE( "Round Starting" )
-     ROUND_TIMELEFT = ROUND_TIME
-     end
---end
-       
-       
-function ROUND_HANDLE()
-    if (ROUND_TIMELEFT == -1) then -- Start the first round
-        ROUND_WAIT()
-        return end
-      
-    ROUND_TIMELEFT = ROUND_TIMELEFT - 1
-      
-    if (ROUND_TIMELEFT == 0) then
-        if (ROUND_BREAK) then
-            ROUND_START()
-            ROUND_BREAK = false
-        else
-            ROUND_END()
-            ROUND_BREAK = true
-        end
-    end
-end
-  
-timer.Create("ROUND_HANDLE", 1, 0, ROUND_HANDLE)
-  
-function ROUND_WAIT()
-    if (#player.GetAll() <= 1) then
-    ROUND_MESSEGE( "Need More Players To Start.")
-    else if (#player.GetAll() == 2) then
-    ROUND_MESSEGE( "Please Wait..." )
-    timer.Simple(1,ROUND_START)
-     end
-   end
-end
-
-*/

@@ -2,6 +2,11 @@ AddCSLuaFile( "cl_init.lua" )
 AddCSLuaFile( "shared.lua" )
 
 include( "shared.lua" )
+
+include("rounds.lua") -- Enable/disable rounds.
+include("cl_shop.lua") -- Shop!
+AddCSLuaFile("cl_score.lua") -- Scoreboard
+
 /*
   ________        __ ___________.__                    
  /  _____/  _____/  |\__    ___/|  |__   ____   _____  
@@ -12,26 +17,9 @@ include( "shared.lua" )
 */
 
 if ( SERVER ) then
-
-	AddCSLuaFile( "rounds.lua" ) -- Enable/disable rounds.
 	
 	XP_STARTAMOUNT = 0
-	
-	round = {}
-
-	-- Variables Round-System
-	round.Clean = true
-	round.Enable = true
-	round.Break	= 20	-- second breaks
-	round.Time	= 60	-- minute rounds
-	--round.Time = CreateConVar("round.Time", "0")
-	--round.Break = CreateConVar("round.Break", "0")
-
-	-- Read Variables
-	round.TimeLeft = -1
-	round.Breaking = false
-	
-	
+		
 	function xFirstSpawn( ply )
 		local experience = ply:GetPData( "xp" )
 
@@ -64,19 +52,6 @@ end
 	//////////////////////////////////////////////////
 function Shop( ply )
 	ply:ConCommand("shop")
-	/*
-		if(i = 3) then
-		i = 0
-		end
-		if i = 0 then 
-    	ply:ConCommand("shop")
-		i = 1
-		end
-		if then
-		i = 0
-		WeaponFrame:Close()
-		end
-		*/
 end
 hook.Add("ShowHelp", "MyHook", Shop)
 
@@ -418,6 +393,7 @@ end
 	end
 	
 function GM:Initialize()
+	--round.Begin()
     timer.Create( "Healthgain", 1, 0, function()
 	for k, ply in pairs( player.GetAll() ) do
 if ply:Health() < ply:GetMaxHealth() then
@@ -522,61 +498,37 @@ hook.Add("OnEntityCreated", "RemoveDeadRag", RemoveDeadRag)
 	//////////////////////////////////////////////////				
 
 function GM:OnNPCKilled( victim, killer, weapon )
-	--NPCCounter();
-	/*
-	for k, v in pairs( player.GetAll() ) do
-	v:SetNWInt( 'NPCteam1', #ents.FindByName( "TEAM1" ) )
-	end
-
-	for k, v in pairs( player.GetAll() ) do
-	v:SetNWInt( 'NPCteam2', #ents.FindByName( "TEAM2" ) )
-	end*/
-	/*
-	for k, v in pairs( player.GetAll() ) do
-	v:SetNWInt( 'NPCteam1', ply:GetNWInt("NPCteam1") - 1)
-	end
-
-	for k, v in pairs( player.GetAll() ) do
-	v:SetNWInt( 'NPCteam2', ply:GetNWInt("NPCteam2") - 1)
-	end
-	*/
 	if victim:GetName() == "SpecialOne" then
 	killer:AddXp( math.random(600, 1000) )
-	--killer:AddXP (900)
 	for k,v in pairs(player.GetAll()) do
 		v:PrintMessage( HUD_PRINTTALK, "[GetThem]A Special NPC has been killed.");
+	end	
 	end
-	end
-	
-	if killer:Team() == 1 and victim:GetName() == "TEAM1" then
-	SetGlobalInt("NPCteam1", GetGlobalInt("NPCteam1") - 1)
-	else 
-	if killer:Team() == 2 and victim:GetName() == "TEAM2" then
-	SetGlobalInt("NPCteam2", GetGlobalInt("NPCteam2") - 1)
-	end
-	
-    if killer:Team() == 1 and victim:GetName() == "TEAM2" then
-   -- killer:PrintMessage( HUD_PRINTTALK, "[GetThem] NPC has been killed.");
-	killer:AddXp( math.random(60, 100) )
-	killer:SetNWInt("killcounter", killer:GetNWInt("killcounter") + 1)
-	SetGlobalInt("NPCteam2", GetGlobalInt("NPCteam2") - 1)
-	//killer:ChatPrint("Hello")
-	//killer:SetNWInt("NPCteam2", killer:GetNWInt("NPCteam2") - 1 )
 	
 
-	--killer:ChatPrint( "Your xp is: " .. killer:GetXp() )
+	if killer:Team() == 1 and victim:GetName() == "TEAM1" then
+	SetGlobalInt("NPCteam1", GetGlobalInt("NPCteam1") - 1)
+	killer:AddXp( math.random(-600, -1000) )
+	else 
+	if killer:Team() == 2 and victim:GetName() == "TEAM2" then
+	SetGlobalInt("NPCteam2", GetGlobalInt("NPCteam2") - 1 )
+	killer:AddXp( math.random(-600, -1000) )
+	end
+	
+	
+    if killer:Team() == 1 and victim:GetName() == "TEAM2" then
+	killer:AddXp( math.random(60, 100) )
+	killer:SetNWInt("killcounter", killer:GetNWInt("killcounter") + 1)
+	SetGlobalInt("NPCteam2", GetGlobalInt("NPCteam2") - 1)
+
 	else 
 	if killer:Team() == 2 and victim:GetName() == "TEAM1" then
-   -- killer:PrintMessage( HUD_PRINTTALK, "[GetThem] NPC has been killed.");
 	killer:AddXp( math.random(60, 100) )
 	killer:SetNWInt("killcounter", killer:GetNWInt("killcounter") + 1)
 	SetGlobalInt("NPCteam1", GetGlobalInt("NPCteam1") - 1)
-	//killer:SetNWInt("NPCteam1", killer:GetNWInt("NPCteam1") - 1)
-	
-	
-	--killer:ChatPrint( "Your xp is: " .. killer:GetXp() )
 	end
 	end
+	
 	end
 	hook.Call("HUDPaint");
 end
@@ -647,14 +599,14 @@ end
 	/////////////////OLD '//' vieuw-function///////////
 	//////////////////////////////////////////////////	
 function ISaid( ply, text, team )
-			local aliveNPCs1 = #ents.FindByName( "TEAM1" )
-			local aliveNPCs2 = #ents.FindByName( "TEAM2" )
+			--local aliveNPCs1 = #ents.FindByName( "TEAM1" )
+			--local aliveNPCs2 = #ents.FindByName( "TEAM2" )
 			local SpecialOne = #ents.FindByName( "SpecialOne" )
 			
 			
     if (string.sub(text, 1, 2) == "//") then
 	for k, v in ipairs( player.GetAll() ) do
-	v:PrintMessage( HUD_PRINTTALK, "The Blue Team Has " .. tostring( aliveNPCs1 ) .. " NPC's, The Red Team Has " .. tostring( aliveNPCs2 ) .. " NPC's." )
+	--v:PrintMessage( HUD_PRINTTALK, "The Blue Team Has " .. tostring( aliveNPCs1 ) .. " NPC's, The Red Team Has " .. tostring( aliveNPCs2 ) .. " NPC's." )
 	v:PrintMessage( HUD_PRINTTALK, "There are " .. tostring( SpecialOne ) .. " Special NPC's." )
 
 	end
@@ -696,7 +648,6 @@ SetGlobalInt("NPCteam2", 0)
 
 	for k,v in pairs(player.GetAll()) do
 		v:Spawn()
-
 		--v:PrintMessage( HUD_PRINTTALK, "[GetThem]The map has been cleaned!");
 	end
 end
@@ -783,170 +734,9 @@ end
 			local aliveNPCs2 = #ents.FindByName( "TEAM2" )
 			for k, v in ipairs( player.GetAll() ) do
 				v:AddXp( (aliveNPCs1 + aliveNPCs2) * 5 )
-				v:PrintMessage( HUD_PRINTTALK, "[PAIDAY!]Every NPC is money, here are your " .. tostring( (aliveNPCs1 + aliveNPCs2) * 5 ) .. " points!");
+				v:PrintMessage( HUD_PRINTTALK, "[PAYDAY!]Every NPC is money, here are your " .. tostring( (aliveNPCs1 + aliveNPCs2) * 5 ) .. " points!");
 			end
 		end )
 			
-	///////////////////////////////////////////////////
-	/////////////////3RD PERSON///////////////////////
-	//////////////////////////////////////////////////
-	/*
-	if( CLIENT ) then
-
-	function ThirdPersonUmsg( data )
-		if( LocalPlayer().ThirdPerson == nil ) then
-			LocalPlayer().ThirdPerson = true;
-		else
-			LocalPlayer().ThirdPerson = !LocalPlayer().ThirdPerson;
-		end;	
-	end;
-	usermessage.Hook( "ThirdPerson", ThirdPersonUmsg );
-	
-	function ThirdPerson( ply, pos, ang, fov )
-		if( LocalPlayer().ThirdPerson ) then
-			local view = {};
-			view.origin = pos - ( ang:Forward() * 100 );
-			view.angles = ang;
-			view.fov = fov;
-			
-			return view;
-		end;
-	end;
-	hook.Add( "CalcView", "ThirdPerson", ThirdPerson );
-	
-	function ThirdPersonSDLP()
-		if( LocalPlayer().ThirdPerson ) then
-			return true;
-		end;
-	end;
-	hook.Add( "ShouldDrawLocalPlayer", "ThirdPersonSDLP", ThirdPersonSDLP );
-
-else
-
-	function ToggleThirdPerson( ply )
-		umsg.Start( "ThirdPerson", ply );
-		umsg.End();
-	end;
-	hook.Add( "ShowTeam", "ToggleThirdPerson", ToggleThirdPerson );
-	
-end;
-*/
-	///////////////////////////////////////////////////
-	/////////////////     ROUNDSYSTEM//////////////////
-	//////////////////////////////////////////////////
-util.AddNetworkString("Round_Timer")
-util.AddNetworkString("Round_active")	
-
-local delay = 0
-local roundTimer = round.Time
 
 
-
-hook.Add( "Think", "CurTimeDelay", function()
- if CurTime() < delay then return end
-	--print( delay )
-	--print ( roundTimer)
-	roundTimer = roundTimer - 1
-	delay = CurTime() + 1
-	
-	function Broadcast(Text)
-	for k, v in pairs(player.GetAll()) do
-		v:SetNWInt("roundTimer", roundTimer)
-	end
-	end
-	
-	
-	Roundtimer1 = roundTimer
-	umsg.Start("RoundTimer");
-	umsg.String(Roundtimer1);
-	umsg.End();
-	
-	for k, v in pairs( player.GetAll() ) do
-	v:SetNWInt( 'roundTimer', Roundtimer1 )
-	end
-end)
-
-function round.Broadcast(Text)
-	for k, v in pairs(player.GetAll()) do
-		v:ConCommand("play buttons/button17.wav")
-		v:ChatPrint(Text)
-	end
-end
-
-function round.Begin()
-	-- (Anything that may need to happen when the round begins)
-	
-	round.Broadcast("Round starting! Round ends in " .. round.Time .. " seconds!")
-	round.TimeLeft = round.Time
-end
-
-function round.End()
-	-- (Anything that may need to happen when the round ends)
-	
-
-	
-	--------Best Player Shizzl------------
-	local BestScore = 0 
-	local BestPlayer
- 
-	for k,v in pairs( player.GetAll() ) do  
-	local Frags = v:Frags()       
-	if Frags > BestScore then     
-		BestPlayer = v:Name()
-		--v:SetFrags( 0 )
-		v:AddXp( v:Frags()*30 )
-		v:PrintMessage( HUD_PRINTTALK, "[WON!] + " .. v:Frags()*30 .. " $!");
-		BestScore = Frags  
-
-	
-	end
-	end
- 
-	if BestScore != 0 then
-	round.Broadcast("" .. BestPlayer .. " has won " .. BestScore*30 .. " $ with ".. tostring(BestScore) .. " spawned humans!") 
-	end
-	---------------------------
-	
-	roundTimer = round.Time + round.Break
-	round.Broadcast("Round over! Next round in " .. round.Break .. " seconds!")
-	round.TimeLeft = round.Break
-	
-	if round.Clean == true then
-	
-	RunConsoleCommand("clean_map");
-	for k,v in pairs( player.GetAll() ) do  
-	
-		--v:PrintMessage( HUD_PRINTTALK, "[WON!] + " .. BestScore*2 .. " $!");
-		--v:AddXp( BestScore*10 )
-		v:SetFrags( 0 )
-		--v:StripWeapons
-		
-	end	
-	end
-
-	
-end
-
-function round.Handle()
-if (round.Enable == true) then
-	if (round.TimeLeft == -1) then -- Start the first round
-		round.Begin()
-		return
-	end
-	
-	round.TimeLeft = round.TimeLeft - 1
-	
-	if (round.TimeLeft == 0) then
-		if (round.Breaking) then
-			round.Begin()
-			round.Breaking = false
-		else
-			round.End()
-			round.Breaking = true
-		end
-	end
-
-	end
-	end
-	
-timer.Create("round.Handle", 1, 0, round.Handle)

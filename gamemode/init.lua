@@ -63,6 +63,8 @@ end
 	/////////////////SHOP!!////////////////////////////
 	//////////////////////////////////////////////////
 function Shop( ply )
+	ply:ConCommand("shop")
+	/*
 		if(i = 3) then
 		i = 0
 		end
@@ -74,6 +76,7 @@ function Shop( ply )
 		i = 0
 		WeaponFrame:Close()
 		end
+		*/
 end
 hook.Add("ShowHelp", "MyHook", Shop)
 
@@ -557,7 +560,7 @@ function GM:OnNPCKilled( victim, killer, weapon )
 	killer:AddXp( math.random(60, 100) )
 	killer:SetNWInt("killcounter", killer:GetNWInt("killcounter") + 1)
 	SetGlobalInt("NPCteam2", GetGlobalInt("NPCteam2") - 1)
-	killer:ChatPrint("Hello")
+	//killer:ChatPrint("Hello")
 	//killer:SetNWInt("NPCteam2", killer:GetNWInt("NPCteam2") - 1 )
 	
 

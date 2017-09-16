@@ -1,19 +1,19 @@
 include( 'shared.lua' )
 
 
-// Clientside only stuff goes here
+-- Clientside only stuff goes here
 
 function killcounter()  
 draw.WordBox( 6, ScrW() - 1250, ScrH() - 215 , "" .. LocalPlayer():GetNWInt("killcounter") .. " kills","DermaLarge",Color(200,0,0,0),Color(255,255,255,255))  
 
-if(GetGlobalInt("NPCteam1") != null) then 
+if(GetGlobalInt("NPCteam1") ~= null) then
 draw.WordBox( 6, ScrW() * 0.54, ScrH() * 0.06, "Blue[ ".. GetGlobalInt("NPCteam1") .. " ]","DermaLarge",Color(200,200,200,50),Color(0,0,255,255))  
 else
 draw.WordBox( 6, ScrW() * 0.54, ScrH() * 0.06, "Blue[ ".. 0 .. " ]","DermaLarge",Color(200,200,200,50),Color(0,0,255,255))  
 end
 
-if(GetGlobalInt("NPCteam2") != null) then
-draw.WordBox( 6, ScrW() * 0.44, ScrH() * 0.06, "Red[ ".. GetGlobalInt("NPCteam2") .. " ]","DermaLarge",Color(200,200,200,50),Color(255,0,0,255))  
+if(GetGlobalInt("NPCteam2") ~= null) then
+draw.WordBox( 6, ScrW() * 0.44, ScrH() * 0.06, "Red[ ".. GetGlobalInt("NPCteam2") .. " ]","DermaLarge",Color(200,200,200,50),Color(255,0,0,255))
 else
 draw.WordBox( 6, ScrW() * 0.44, ScrH() * 0.06, "Red[ ".. 0 .. " ]","DermaLarge",Color(200,200,200,50),Color(255,0,0,255))  
 end
